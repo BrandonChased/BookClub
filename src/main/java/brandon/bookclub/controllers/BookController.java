@@ -20,20 +20,25 @@ import brandon.bookclub.models.Book;
 import brandon.bookclub.models.User;
 import brandon.bookclub.services.BookService;
 import brandon.bookclub.services.UserService;
-import net.bytebuddy.matcher.ModifierMatcher.Mode;
 
 @Controller
 public class BookController {
-    
-    @Autowired BookService bookService;
-    @Autowired UserService userService;
 
-        // Creates a new book in the database
+    @Autowired
+    BookService bookService;
+    @Autowired
+    UserService userService;
+
+    // Creates a new book in the database
     @PostMapping("/books")
-    public String createBook(@Valid @ModelAttribute("book") Book book, BindingResult result){
-        if(result.hasErrors()) {
+    public String createBook(@Valid @ModelAttribute("book") Book book, BindingResult result, HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
+
+        if (result.hasErrors()) {
             return "books/new.jsp";
-        }else {
+        } else {
             bookService.addBook(book);
             return "redirect:/books";
         }
@@ -41,16 +46,24 @@ public class BookController {
 
     // All Books Page
     @GetMapping("/books")
-    public String allBooks(Model model) {
+    public String allBooks(Model model, HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
+
         List<Book> books = bookService.getall();
         System.out.println("books" + books);
         model.addAttribute("books", books);
         return "books/index.jsp";
     }
+
     // One book
     @GetMapping("/books/{id}")
     public String oneBook(@PathVariable("id") Long id, Model model, HttpSession session) {
-        
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
+
         Book book = bookService.findBook(id);
         model.addAttribute("book", book);
         model.addAttribute("user", userService.findUserById((Long) session.getAttribute("userId")));
@@ -60,22 +73,36 @@ public class BookController {
 
     // New Book Page
     @GetMapping("/books/new")
-    public String newBook(@ModelAttribute("book")Book book, BindingResult result) {
+    public String newBook(@ModelAttribute("book") Book book, BindingResult result, HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
         return "books/new.jsp";
     }
-    
+
     // Edit Book Page
     @GetMapping("/books/{id}/edit")
-    public String editBookPage(Model model, @PathVariable("id")Long id){
+    public String editBookPage(
+            Model model,
+            @PathVariable("id") Long id,
+            HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
+
         Book book = bookService.findBook(id);
         model.addAttribute("book", book);
         return "books/edit.jsp";
     }
 
-    //Edits a Book in the DataBase
+    // Edits a Book in the DataBase
     @PutMapping("/books/{id}")
-    public String editBook(@PathVariable("id")Long id,@Valid @ModelAttribute("book") Book book, BindingResult result) {
-        if(result.hasErrors()) {
+    public String editBook(@PathVariable("id") Long id, @Valid @ModelAttribute("book") Book book, BindingResult result,
+            HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/";
+        }
+        if (result.hasErrors()) {
             return "books/edit.jsp";
         }
         bookService.editBook(book);
@@ -84,7 +111,11 @@ public class BookController {
 
     // Deletes a book in the Database
     @DeleteMapping("/books/{id}")
-    public String delBook(@PathVariable("id")Long id){
+    public String delBook(@PathVariable("id") Long id, HttpSession session) {
+        if(session.getAttribute("userId")== null) {
+            return "redirect:/";
+        }
+
         Book book = bookService.findBook(id);
         bookService.deleteBook(book);
         return "redirect:/books";
@@ -93,10 +124,13 @@ public class BookController {
     // Add a like to books
     @PostMapping("/books/{id}/like")
     public String addLike(
-        @PathVariable("id") Long id,
-        HttpSession session
-        ){
-        User user = userService.findUserById((Long)session.getAttribute("userId"));
+            @PathVariable("id") Long id,
+            HttpSession session) {
+        if(session.getAttribute("userId")== null) {
+            return "redirect:/";
+        }
+
+        User user = userService.findUserById((Long) session.getAttribute("userId"));
         Book book = bookService.findBook(id);
         bookService.addLikeToBook(book, user);
         return "redirect:/books/{id}";
@@ -105,10 +139,13 @@ public class BookController {
     // Delete a like to books
     @DeleteMapping("/books/{id}/unlike")
     public String unLike(
-        @PathVariable("id") Long id,
-        HttpSession session
-        ){
-        User user = userService.findUserById((Long)session.getAttribute("userId"));
+            @PathVariable("id") Long id,
+            HttpSession session) {
+        if(session.getAttribute("userId")== null) {
+            return "redirect:/";
+        }
+
+        User user = userService.findUserById((Long) session.getAttribute("userId"));
         Book book = bookService.findBook(id);
         bookService.deletelikeFromBook(book, user);
         return "redirect:/books/{id}";
