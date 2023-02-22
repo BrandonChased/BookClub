@@ -41,13 +41,30 @@
         <hr/>
             <p>${book.myThoughts}</p>
         <hr/>
-        <div class="btns text-end mt-4 d-flex justify-content-end">
+        
+        <div class="btns text-end mt-4 d-flex justify-content-between">
+            <c:choose>
+                <c:when test="${!book.bookLikes.contains(user)}">
+                    <form action="/books/${book.id}/like" method="post">
+                        <button class="btn btn-primary">Like</button>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <form action="/books/${book.id}/unlike" method="post">
+                        <input type="hidden" name="_method" value="delete">
+                        <button class="btn btn-primary">Unlike</button>
+                    </form>
+                </c:otherwise>
+            </c:choose>
+
             <c:if test="${book.user.id == userId}">
-                <a class="btn btn-warning" style="margin-right: 1rem;" href="/books/${book.id}/edit">edit</a>
-                <form action="/books/${book.id}" method="post">
-                    <input type="hidden" name="_method" value="delete">
-                    <input class="btn btn-danger" type="submit" value="delete">
-                </form>   
+                <div class="d-flex">
+                    <a class="btn btn-warning" style="margin-right: 1rem;" href="/books/${book.id}/edit">edit</a>
+                    <form action="/books/${book.id}" method="post">
+                        <input type="hidden" name="_method" value="delete">
+                        <input class="btn btn-danger" type="submit" value="delete">
+                    </form>
+                </div>
             </c:if>
         </div>
     </div>

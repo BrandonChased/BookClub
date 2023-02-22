@@ -1,6 +1,8 @@
 package brandon.bookclub.models;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -48,6 +52,14 @@ public class Book {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "likes",
+        joinColumns = @JoinColumn(name = "book_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> bookLikes;
+
 
     public Book() {
     }
@@ -61,6 +73,7 @@ public class Book {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.user = user;
+        this.bookLikes = new ArrayList<User>();
     }
 
     @PrePersist
@@ -128,5 +141,16 @@ public class Book {
     public void setUser(User user) {
         this.user = user;
     }
+
+
+    public List<User> getBookLikes() {
+        return this.bookLikes;
+    }
+
+    public void setBookLikes(List<User> bookLikes) {
+        this.bookLikes = bookLikes;
+    }
+    
+
 
 }

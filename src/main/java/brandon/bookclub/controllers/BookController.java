@@ -2,6 +2,7 @@ package brandon.bookclub.controllers;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import brandon.bookclub.models.Book;
+import brandon.bookclub.models.User;
 import brandon.bookclub.services.BookService;
+import brandon.bookclub.services.UserService;
+import net.bytebuddy.matcher.ModifierMatcher.Mode;
 
 @Controller
 public class BookController {
     
     @Autowired BookService bookService;
+    @Autowired UserService userService;
 
         // Creates a new book in the database
     @PostMapping("/books")
@@ -42,12 +47,13 @@ public class BookController {
         model.addAttribute("books", books);
         return "books/index.jsp";
     }
-    // All Books Page
+    // One book
     @GetMapping("/books/{id}")
-    public String oneBook(@PathVariable("id") Long id, Model model) {
+    public String oneBook(@PathVariable("id") Long id, Model model, HttpSession session) {
         
         Book book = bookService.findBook(id);
         model.addAttribute("book", book);
+        model.addAttribute("user", userService.findUserById((Long) session.getAttribute("userId")));
 
         return "books/view.jsp";
     }
@@ -82,6 +88,30 @@ public class BookController {
         Book book = bookService.findBook(id);
         bookService.deleteBook(book);
         return "redirect:/books";
+    }
+
+    // Add a like to books
+    @PostMapping("/books/{id}/like")
+    public String addLike(
+        @PathVariable("id") Long id,
+        HttpSession session
+        ){
+        User user = userService.findUserById((Long)session.getAttribute("userId"));
+        Book book = bookService.findBook(id);
+        bookService.addLikeToBook(book, user);
+        return "redirect:/books/{id}";
+    }
+
+    // Delete a like to books
+    @DeleteMapping("/books/{id}/unlike")
+    public String unLike(
+        @PathVariable("id") Long id,
+        HttpSession session
+        ){
+        User user = userService.findUserById((Long)session.getAttribute("userId"));
+        Book book = bookService.findBook(id);
+        bookService.deletelikeFromBook(book, user);
+        return "redirect:/books/{id}";
     }
 
 }

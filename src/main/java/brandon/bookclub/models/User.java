@@ -1,5 +1,6 @@
 package brandon.bookclub.models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -9,6 +10,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -54,11 +58,19 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Book> books;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "likes",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> likedBooks;
+
     public User() {
     }
 
 
-    public User(Long id, String userName, String email, String password, String confirm, Date createdAt, Date updatedAt, List<Book> books) {
+    public User(Long id, String userName, String email, String password, String confirm, Date createdAt, Date updatedAt, List<Book> books, List<Book> likedBooks) {
         this.id = id;
         this.userName = userName;
         this.email = email;
@@ -66,9 +78,9 @@ public class User {
         this.confirm = confirm;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.books = books;
+        this.books = books; 
+        this.likedBooks = new ArrayList<Book>();
     }
-
 
 
     @PrePersist
@@ -144,6 +156,14 @@ public class User {
 
     public void setBooks(List<Book> books) {
         this.books = books;
+    }
+
+    public List<Book> getLikedBooks() {
+        return this.likedBooks;
+    }
+
+    public void setLikedBooks(List<Book> likedBooks) {
+        this.likedBooks = likedBooks;
     }
 
 

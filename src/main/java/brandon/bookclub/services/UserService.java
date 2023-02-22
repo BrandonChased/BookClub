@@ -17,6 +17,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+
+    public User findUserById(Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        return user;
+    }
     // TO-DO: Write register and login methods!
     public User register(User newUser, BindingResult result) {
         Optional<User> user = userRepository.findByEmail(newUser.getEmail());
